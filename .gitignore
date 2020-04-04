@@ -145,3 +145,6 @@ static
 # Editor files
 .vscode/
 .idea/
+
+# Other
+.venv
