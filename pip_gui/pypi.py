@@ -84,6 +84,7 @@ def get_package(package_name: str):
         'forks': data_gh['forks_count'],
         'open_issues': data_gh['open_issues_count'],
         'last_update': list(data['releases'].keys())[-1],  # Procurar na lista de releases, pegar a data do último release
+        'last_commit': data_gh['updated_at'],
         'pypi_readme': data['info']['description'],
         # README do repo Git, se existir, github/gitlab etc.
         'homepage_readme': requests.get(f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/master/README.md').text,
@@ -106,4 +107,4 @@ def get_package(package_name: str):
 
 
 if __name__ == '__main__':
-    print(get_package('nyaacli')['project_urls'])
+    print(get_package('nyaacli')['last_commit'])
