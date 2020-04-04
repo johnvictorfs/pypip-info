@@ -18,7 +18,6 @@ class Api {
 
   async pypi_search(query) {
     const data = await this.axios.get(`search/${query}`);
-    console.log(`search/${query}`);
     return data;
   }
 

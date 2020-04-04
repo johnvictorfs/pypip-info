@@ -1,0 +1,41 @@
+{
+  "name": "nyaacli",
+  "author": "John Victor",
+  "author_email": "johnvictorfs@gmail.com",
+  "maintainers": [""],
+  "keywords": ["CLI", "anime"],
+  "requirements": [
+    "feedparser (>=5.2,<6.0)",
+    "guessit (>=3.0,<4.0)",
+    "click (>=7.0,<8.0)",
+    "colorama (>=0.4.1,<0.5.0)",
+    "dataclasses (>=0.7,<0.8); python_version >= \"3.6\" and python_version < \"3.7\"",
+    "questionary (>=1.5.1,<2.0.0)"
+  ],
+  "license": "MIT License",
+  "python_versions": ["3", "3.6", "3.7", "3.8"],
+  "operating_systems": null,
+  "description": "# Nyaa-cli [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) [![nyaacli](https://img.shields.io/pypi/pyversions/nyaacli)](https://pypi.org/project/nyaacli/) [![nyaa.si](https://img.shields.io/badge/-nyaa.si-green)](https://nyaa.si)\n\n\nA CLI for downloading Anime from https://nyaa.si making use of their RSS Feed and [python-libtorrent](https://github.com/arvidn/libtorrent/blob/RC_1_2/docs/python_binding.rst)\n\n[CHANGELOG](CHANGELOG.md)\n\n---\n\n![image](https://user-images.githubusercontent.com/37747572/69002323-bb2ea100-08cb-11ea-9b47-20bd9870c8c0.png)\n\n---\n\n![image](https://user-images.githubusercontent.com/37747572/69002293-33e12d80-08cb-11ea-842e-02947726185d.png)\n\n---\n\n![image](https://user-images.githubusercontent.com/37747572/69002363-ad2d5000-08cc-11ea-9360-76bf1598512d.png)\n\n---\n\n## Installing\n\n- `python3 -m pip install nyaacli --user`\n  - Note: python-libtorrent will still need to be downloaded separately as shown below\n\n- This Program depends on python3-libtorrent, which can be installed using Apt with `sudo apt install python3-libtorrent` or can be built from source here: [python-libtorrent](https://github.com/arvidn/libtorrent/blob/RC_1_2/docs/python_binding.rst)\n\n---\n\n## Usage\n\n- *Help:* `nyaa --help` or `nyaa-cli --help`\n\n- `nyaa \"Anime Name\" <Episode Number (Optional)> -o <Output Folder (Default: /Videos/Anime)>`\n  - *Example:*\n    bash\n    # Downloading Episode 14 of 'Steins;gate' to '~/Anime/Steins;Gate'\n    nyaa \"Steins;Gate\" 14 -o ~/Anime/Steins\\;Gate\n    /Anime/Steins;Gate'\n    nyaa \"Steins;Gate\" 14 -o ~/Anime/Steins\\;Gate\n    ```\n  - Then select the entry you want to Download\n",
+  "bugtrack_url": null,
+  "stars": 435,
+  "forks": 25,
+  "project_urls": [
+    {
+      "name": "Homepage",
+      "url": "https://github.com/johnvictorfs/nyaa-cli"
+    },
+    {
+      "name": "Repository",
+      "url": "https://github.com/johnvictorfs/nyaa-cli"
+    }
+  ],
+  "open_issues_or_prs": null,
+  "last_update": "02/06/2018",
+  "last_commit": "02/09/2019",
+  "pypi_readme": null,
+  "homepage_readme": null,
+  "homepage_type": null,
+  "homepage_url": null,
+  "version": null,
+  "releases": [{ "version_number": null }]
+}
