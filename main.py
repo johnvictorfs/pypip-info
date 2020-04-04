@@ -1,5 +1,6 @@
 from flask import Flask, jsonify
 from flaskwebgui import FlaskUI
+from flask_cors import CORS
 
 from pip_gui.pypi import search_pypi, get_package
 
@@ -8,7 +9,8 @@ DEBUG = True
 app = Flask(__name__)
 app.config.from_object(__name__)
 
-app = Flask(__name__)
+CORS(app, resources={r'/*': {'origins': 'http://localhost:8080'}})
+
 ui = FlaskUI(app)
 
 
