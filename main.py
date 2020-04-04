@@ -10,7 +10,7 @@ app.config.from_object(__name__)
 app = Flask(__name__)
 
 
-@app.route("/search/<string:query>")
+@app.route("/api/search/<string:query>")
 def index(query):
     """
     Search PyPi API
