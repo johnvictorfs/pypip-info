@@ -1,4 +1,5 @@
 from bs4 import BeautifulSoup
+from typing import List
 import requests
 
 
@@ -38,6 +39,9 @@ def find_license(array: list):
 
 
 def find_python_versions(array: list):
+    if not array:
+        return []
+
     new_list = []
     new_new_list = []
     for i, element in enumerate(array):
@@ -58,39 +62,61 @@ def generate_project_urls_dict(urls: dict):
     return new_urls
 
 
+def get_repository_type(urls: List[str]):
+    for url in urls:
+        if 'github' in url.lower():
+            return 'github'
+        elif 'gitlab' in url.lower():
+            return 'gitlab'
+        elif 'bitbucket' in url.lower():
+            return 'bitbucket'
+    return None
+
+
 def get_package(package_name: str):
     data = requests.get(f'http://pypi.python.org/pypi/{package_name}/json/').json()
     github_repo = None
-    for value in data['info']['project_urls'].values():
+    author_github = None
+    repo_name_github = None
+    data_gh = None
+    gh_readme = None
+
+    for value in data['info'].get('project_urls').values():
         if 'github' in value:
             github_repo = value
 
-    author_github = github_repo.split('/')[3] if github_repo else None
-    repo_name_github = github_repo.split('/')[4] if github_repo else None
+            author_github = github_repo.split('/')[3] if github_repo else None
+            repo_name_github = github_repo.split('/')[4] if github_repo else None
 
-    gh_r = requests.get(f'https://api.github.com/repos/{author_github}/{repo_name_github}')
-    if gh_r.status_code == 200:
-        data_gh = gh_r.json()
-    else:
-        data_gh = None
+            gh_r = requests.get(f'https://api.github.com/repos/{author_github}/{repo_name_github}')
+            if gh_r.status_code == 200:
+                data_gh = gh_r.json()
 
-    gh_readme_request = requests.get(f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/master/README.md')
-    gh_readme = gh_readme_request.text if gh_readme_request.status_code == 200 else None
+                default_branch = data_gh.get('default_branch')
+
+                gh_readme_request = requests.get(
+                    f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/{default_branch}/README.md'
+                )
+                gh_readme = gh_readme_request.text if gh_readme_request.status_code == 200 else None
+
+    keywords = data['info'].get('keywords')
 
     parsed_data = {
         'name': package_name,
         'author': data['info'].get('author'),
+        'repository_type': get_repository_type(data['info'].get('project_urls').values()),
         'author_email': data['info'].get('author_email'),
-        'keywords': data['info']['keywords'].split(','),
+        'keywords': keywords.split(',') if keywords else [],
         'requirements': data['info']['requires_dist'],  # requires_dist
         'license': find_license(data['info']['classifiers']),
-        'python_versions': find_python_versions(data['info']['classifiers']),  # classifiers
-        'operating_systems': None,
+        'python_versions': find_python_versions(data['info'].get('classifiers')),  # classifiers
+        'operating_systems': [],
         'description': data_gh['description'] if data_gh else None,
         'bugtrack_url': data['info']['bugtrack_url'],
         'stars': data_gh['stargazers_count'] if data_gh else None,
         'forks': data_gh['forks_count'] if data_gh else None,
         'open_issues': data_gh['open_issues_count'] if data_gh else None,
+        'last_commit': data_gh['updated_at'] if data_gh else None,
         'last_update': list(data['releases'].keys())[-1],  # Procurar na lista de releases, pegar a data do último release
         'pypi_readme': data['info'].get('description'),
         'homepage_readme': gh_readme,
