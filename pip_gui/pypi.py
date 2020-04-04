@@ -27,5 +27,18 @@ def search_pypi(query: str):
     return packages
 
 
+def get_package(package_name: str):
+    pass
+
+
+# TODO: se der tempo
+# Pesquisar venvs na máquina do usuário
+# Usuário pode selecionar python específico
+# Usar pip pra instalar no python selecionado
+# def install_package(package_name: str):
+#     pass
+
+
 if __name__ == '__main__':
-    print(search_pypi('nyaa'))
+    print(get_package('nyaacli'))
+    print(get_package('requests'))
