@@ -51,6 +51,13 @@ def find_python_versions(array: list):
     return new_new_list
 
 
+def generate_project_urls_dict(urls: dict):
+    new_urls = []
+    for key, value in urls.items():
+        new_urls.append({'name': key, 'url': value})
+    return new_urls
+
+
 def get_package(package_name: str):
     data = requests.get(f'http://pypi.python.org/pypi/{package_name}/json/').json()
     github_repo = None
@@ -84,7 +91,7 @@ def get_package(package_name: str):
         'homepage_url': data_gh['html_url'],
         'version': None,
         'releases': list(data['releases'].keys()),
-        'project_urls': data['info']['project_urls']
+        'project_urls': generate_project_urls_dict(data['info']['project_urls'])
     }
 
     return parsed_data
@@ -99,4 +106,4 @@ def get_package(package_name: str):
 
 
 if __name__ == '__main__':
-    print(get_package('nyaacli')['homepage_readme'])
+    print(get_package('nyaacli')['project_urls'])
