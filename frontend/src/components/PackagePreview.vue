@@ -1,6 +1,6 @@
 <template>
-  <v-card class="ma-1" elevation="2">
-    <v-toolbar color="indigo" dark>
+  <v-card class="ma-1" elevation="2" :loading="loading">
+    <v-toolbar color="#0073B7" dark>
       <v-toolbar-title>{{ pack.name }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
@@ -10,7 +10,19 @@
       </v-btn>
     </v-toolbar>
 
-    <v-card-text>
+    <v-row dense justify="center" v-if="error">
+      <v-alert
+        :value="noResults"
+        type="error"
+        transition="scale-transition"
+        border="left"
+        class="ma-2"
+      >
+        Error loading informations for package: {{ pack.name }}
+      </v-alert>
+    </v-row>
+
+    <v-card-text v-if="loaded">
       <v-row>
         <v-col cols="6">
           <v-card>
@@ -32,7 +44,7 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        GitHub Stars: {{ mockPackage.stars }}
+                        Stars: {{ commaSeparetedNumber(mockPackage.stars) }}
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -43,7 +55,7 @@
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        GitHub Forks: {{ mockPackage.forks }}
+                        Forks: {{ commaSeparetedNumber(mockPackage.forks) }}
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -53,7 +65,7 @@
 
             <v-divider />
 
-            <v-card-actions>
+            <v-card-actions v-if="mockPackage.last_commit">
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>
@@ -119,11 +131,17 @@
         </v-col>
       </v-row>
     </v-card-text>
+
+    <v-fade-transition>
+      <v-overlay v-if="loading" absolute color="#036358">
+        <v-progress-circular indeterminate size="32"></v-progress-circular>
+      </v-overlay>
+    </v-fade-transition>
   </v-card>
 </template>
 
 <script>
-import mockPackage from "@/data/packageMock.json";
+import api from "@/api";
 
 export default {
   name: "PackagePreview",
@@ -131,9 +149,26 @@ export default {
     pack: Object,
   },
   data: () => ({
-    mockPackage,
+    loading: true,
+    loaded: false,
+    mockPackage: null,
+    error: false,
   }),
+  async mounted() {
+    try {
+      const { data } = await api.get_package(this.pack.name);
+      this.mockPackage = data;
+      this.loaded = true;
+    } catch (error) {
+      this.error = true;
+    } finally {
+      this.loading = false;
+    }
+  },
   methods: {
+    commaSeparetedNumber(number) {
+      return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    },
     getIcon(name_raw, url_raw) {
       const name = name_raw.toLowerCase();
       const url = url_raw.toLowerCase();

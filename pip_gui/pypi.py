@@ -64,31 +64,38 @@ def get_package(package_name: str):
     for value in data['info']['project_urls'].values():
         if 'github' in value:
             github_repo = value
-    author_github = github_repo.split('/')[3]
-    repo_name_github = github_repo.split('/')[4]
-    data_gh = requests.get(f'https://api.github.com/repos/{author_github}/{repo_name_github}').json()
+
+    author_github = github_repo.split('/')[3] if github_repo else None
+    repo_name_github = github_repo.split('/')[4] if github_repo else None
+
+    gh_r = requests.get(f'https://api.github.com/repos/{author_github}/{repo_name_github}')
+    if gh_r.status_code == 200:
+        data_gh = gh_r.json()
+    else:
+        data_gh = None
+
+    gh_readme_request = requests.get(f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/master/README.md')
+    gh_readme = gh_readme_request.text if gh_readme_request.status_code == 200 else None
 
     parsed_data = {
         'name': package_name,
-        'author': data['info']['author'],
-        'author_email': data['info']['author_email'],
-        'maintainers': data['info']['maintainer'].split(','),
+        'author': data['info'].get('author'),
+        'author_email': data['info'].get('author_email'),
         'keywords': data['info']['keywords'].split(','),
         'requirements': data['info']['requires_dist'],  # requires_dist
         'license': find_license(data['info']['classifiers']),
         'python_versions': find_python_versions(data['info']['classifiers']),  # classifiers
         'operating_systems': None,
-        'description': data_gh['description'],
+        'description': data_gh['description'] if data_gh else None,
         'bugtrack_url': data['info']['bugtrack_url'],
-        'stars': data_gh['stargazers_count'],
-        'forks': data_gh['forks_count'],
-        'open_issues': data_gh['open_issues_count'],
+        'stars': data_gh['stargazers_count'] if data_gh else None,
+        'forks': data_gh['forks_count'] if data_gh else None,
+        'open_issues': data_gh['open_issues_count'] if data_gh else None,
         'last_update': list(data['releases'].keys())[-1],  # Procurar na lista de releases, pegar a data do último release
-        'pypi_readme': data['info']['description'],
-        # README do repo Git, se existir, github/gitlab etc.
-        'homepage_readme': requests.get(f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/master/README.md').text,
-        'homepage_type': data_gh['homepage'],
-        'homepage_url': data_gh['html_url'],
+        'pypi_readme': data['info'].get('description'),
+        'homepage_readme': gh_readme,
+        'homepage_type': data_gh['homepage'] if data_gh else None,
+        'homepage_url': data_gh['html_url'] if data_gh else None,
         'version': None,
         'releases': list(data['releases'].keys()),
         'project_urls': generate_project_urls_dict(data['info']['project_urls'])
@@ -106,4 +113,4 @@ def get_package(package_name: str):
 
 
 if __name__ == '__main__':
-    print(get_package('nyaacli')['project_urls'])
+    print(get_package('nyaacli'))

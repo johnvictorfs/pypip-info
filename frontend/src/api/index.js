@@ -16,9 +16,12 @@ class Api {
     this.middlewares();
   }
 
-  async pypi_search(query) {
-    const data = await this.axios.get(`search/${query}`);
-    return data;
+  pypi_search(query) {
+    return this.axios.get(`search/${query}`);
+  }
+
+  get_package(name) {
+    return this.axios.get(`package/${name}`);
   }
 
   middlewares() {
