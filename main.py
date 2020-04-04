@@ -1,6 +1,6 @@
 from flask import Flask, jsonify
 
-from .pypi import search_pypi
+from pip_gui.pypi import search_pypi
 
 DEBUG = True
 

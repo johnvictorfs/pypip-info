@@ -6,6 +6,11 @@ authors = ["John Victor <johnvictorfs@gmail.com>"]
 
 [tool.poetry.dependencies]
 python = "^3.8"
+requests = "^2.23.0"
+beautifulsoup4 = "^4.8.2"
+lxml = "^4.5.0"
+flaskwebgui = "^0.1.9"
+flask_cors = "^3.0.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
