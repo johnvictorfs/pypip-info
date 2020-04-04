@@ -65,11 +65,11 @@ def generate_project_urls_dict(urls: dict):
 def get_repository_type(urls: List[str]):
     for url in urls:
         if 'github' in url.lower():
-            return 'github'
+            return 'GitHub'
         elif 'gitlab' in url.lower():
-            return 'gitlab'
+            return 'GitLab'
         elif 'bitbucket' in url.lower():
-            return 'bitbucket'
+            return 'BitBucket'
     return None
 
 
@@ -80,6 +80,7 @@ def get_package(package_name: str):
     repo_name_github = None
     data_gh = None
     gh_readme = None
+    contributors = None
 
     for value in data['info'].get('project_urls').values():
         if 'github' in value:
@@ -92,6 +93,12 @@ def get_package(package_name: str):
             if gh_r.status_code == 200:
                 data_gh = gh_r.json()
 
+                contributors_r = requests.get(data_gh['contributors_url'])
+
+                if contributors_r.status_code == 200:
+                    contributors_data = contributors_r.json()
+                    contributors = len(contributors_data)
+
                 default_branch = data_gh.get('default_branch')
 
                 gh_readme_request = requests.get(
@@ -101,23 +108,31 @@ def get_package(package_name: str):
 
     keywords = data['info'].get('keywords')
 
+    last_update = list(data['releases'].keys())[-1]
+
+    requirements = data['info'].get('requires_dist', [])
+
     parsed_data = {
         'name': package_name,
+        'has_repository_data': bool(data_gh),
         'author': data['info'].get('author'),
-        'repository_type': get_repository_type(data['info'].get('project_urls').values()),
+        'contributors': contributors,
+        'repository_type': get_repository_type(data['info'].get('project_urls', {}).values()),
         'author_email': data['info'].get('author_email'),
         'keywords': keywords.split(',') if keywords else [],
-        'requirements': data['info']['requires_dist'],  # requires_dist
+        'requirements': len(requirements) if requirements else None,
         'license': find_license(data['info']['classifiers']),
         'python_versions': find_python_versions(data['info'].get('classifiers')),  # classifiers
         'operating_systems': [],
+        'number_releases': len(data['releases']),
         'description': data_gh['description'] if data_gh else None,
         'bugtrack_url': data['info']['bugtrack_url'],
         'stars': data_gh['stargazers_count'] if data_gh else None,
         'forks': data_gh['forks_count'] if data_gh else None,
         'open_issues': data_gh['open_issues_count'] if data_gh else None,
         'last_commit': data_gh['updated_at'] if data_gh else None,
-        'last_update': list(data['releases'].keys())[-1],  # Procurar na lista de releases, pegar a data do último release
+        'last_update': last_update,  # Procurar na lista de releases, pegar a data do último release
+        'last_update_date': data['releases'][last_update][0].get('upload_time'),
         'pypi_readme': data['info'].get('description'),
         'homepage_readme': gh_readme,
         'homepage_type': data_gh['homepage'] if data_gh else None,
