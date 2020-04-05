@@ -2,12 +2,20 @@
   <v-row justify="center">
     <v-col cols="11" v-if="selectedPackage">
       <v-card class="rounded-card" elevation="4">
-        <ToolBar />
-        <v-card-text v-if="selectedPackage.pypi_readme">
-          <span v-html="htmlDescription"></span>
-        </v-card-text>
-        <v-card-text v-else-if="selectedPackage.homepage_readme">
+        <ToolBar
+          :title="
+            selectedPackage.homepage_readme ? 'GitHub Readme' : 'PyPi Readme'
+          "
+          :icon="
+            selectedPackage.homepage_readme ? 'fab fa-github' : 'fab fa-python'
+          "
+        />
+
+        <v-card-text v-if="selectedPackage.homepage_readme">
           <span v-html="htmlDescriptionHomepage"></span>
+        </v-card-text>
+        <v-card-text v-else-if="selectedPackage.pypi_readme">
+          <span v-html="htmlDescription"></span>
         </v-card-text>
       </v-card>
     </v-col>

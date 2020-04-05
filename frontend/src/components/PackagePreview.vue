@@ -5,8 +5,6 @@
 
       <v-spacer></v-spacer>
 
-      {{ hasNoReadme }}
-
       <v-tooltip bottom>
         <template v-slot:activator="{ on }">
           <v-btn icon @click="selectPackage" v-on="on" :disabled="hasNoReadme">
@@ -333,10 +331,6 @@ export default {
       }
 
       if (!this.packageData.pypi_readme && !this.packageData.homepage_readme) {
-        console.log(
-          !this.packageData.pypi_readme,
-          !this.packageData.homepage_readme
-        );
         this.hasNoReadme = true;
       }
 
