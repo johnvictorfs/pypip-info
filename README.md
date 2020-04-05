@@ -2,7 +2,11 @@
 
 [Devpost submission](https://devpost.com/software/pypip-info)
 
-Made for the Hackaton [CatHacks 2020](https://cathacks-online-hackathon.devpost.com) from the University of Kentucky.
+Made for the Hackaton [CatHacks VI (2020)](https://cathacks-online-hackathon.devpost.com) from the University of Kentucky.
+
+---
+
+## Project Information
 
 A GUI for [PyPi](https://pypi.org) for searching and getting condensed information on packages and their respective Repositories, running on Desktop (chrome) with [Flask + Flaskwebgui](https://github.com/ClimenteA/flaskwebgui). Frontend made with [Vue.js](https://vuejs.org/) and the Component Framework [Vuetify](https://vuetifyjs.com) for Vue.
 
@@ -18,26 +22,27 @@ For this purpose me and my friend [Guilherme](https://github.com/johnvictorfs/pi
 
 ## Main Features
 
-- General Information
-  - Project License
+- Search for Packages by name on PyPI
+  - General Information
+    - Project License
 
-- GitHub Information
-  - Number of Stars
-  - Number of Forks
-  - Number of Contributors
-  - Latest commit date
+  - GitHub Information
+    - Number of Stars
+    - Number of Forks
+    - Number of Contributors
+    - Latest commit date
 
-- PyPi Project Information
-  - Project URLs
-  - Python Versions
-  - Number of Releases
-  - Requirements
-    - Number of Requirements
-    - List of Requirements
-  - Latest Release version and date
+  - PyPi Project Information
+    - Project URLs
+    - Python Versions
+    - Number of Releases
+    - Requirements
+      - Number of Requirements
+      - List of Requirements
+    - Latest Release version and date
 
-- Readme of project
-  - Uses either GitHub's or PyPi Readme, whichever is available, since some projects have a GitHub Readme but not a PyPi one or vice-versa
+  - Readme of projects
+    - Uses either GitHub's or PyPi Readme, whichever is available, since some projects have a GitHub Readme but not a PyPi one or vice-versa
 
 ---
 
@@ -62,6 +67,8 @@ For this purpose me and my friend [Guilherme](https://github.com/johnvictorfs/pi
 - Short automatic analysis to decide if a Library is probably active or not
 
 - Better looking Code Syntax Highlighting for project Readme
+
+- Search Projects by categories/keywords instead of only names
 
 ----
 
