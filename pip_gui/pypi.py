@@ -67,6 +67,28 @@ def find_python_versions(array: list):
     return new_new_list
 
 
+def flatten_lists(l):
+    return [item for sublist in l for item in sublist]
+
+
+def get_last_update(releases):
+    if not releases:
+        return None, None
+
+    all_releases = []
+    for key, value in releases.items():
+        for release in value:
+            new_value = release
+            new_value['version'] = key
+            all_releases.append(new_value)
+
+    # Sort releases by upload date
+    latest_release = sorted(all_releases, key=lambda i: i['upload_time'])
+
+    # Get last release from sorted releases
+    return (latest_release[-1]['upload_time'], latest_release[-1]['version'])
+
+
 def generate_project_urls_dict(urls: dict):
     new_urls = []
     if not urls:
@@ -136,7 +158,7 @@ def get_package(package_name: str):
 
     keywords = data['info'].get('keywords')
 
-    last_update = list(data['releases'].keys())[-1]
+    last_update_date, last_update_version = get_last_update(data['releases'])
 
     requirements = data['info'].get('requires_dist', [])
 
@@ -145,11 +167,6 @@ def get_package(package_name: str):
         'name': 'Project Page',
         'url': data['info'].get('project_url')
     }
-
-    last_update_date = None
-    if data['releases'].get(last_update):
-        last_update_date = data['releases'][last_update][0].get('upload_time')
-
     repository_type, repository_url = get_repository_type(data['info'].get('project_urls'))
 
     print(repository_type, repository_url)
@@ -175,7 +192,7 @@ def get_package(package_name: str):
         'forks': data_gh['forks_count'] if data_gh else None,
         'open_issues': data_gh['open_issues_count'] if data_gh else None,
         'last_commit': data_gh['updated_at'] if data_gh else None,
-        'last_update': last_update,  # Procurar na lista de releases, pegar a data do último release
+        'last_update': last_update_version,  # Procurar na lista de releases, pegar a data do último release
         'last_update_date': last_update_date,
         'pypi_readme': data['info'].get('description'),
         'pypi_readme_type': data['info'].get('description_content_type'),
@@ -199,4 +216,6 @@ def get_package(package_name: str):
 
 
 if __name__ == '__main__':
-    print(get_package('nyaacli'))
+    data = get_package('requests')
+    print(data['last_update'])
+    print(data['last_update_date'])
