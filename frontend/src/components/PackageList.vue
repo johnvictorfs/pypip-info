@@ -4,8 +4,9 @@
       <v-card class="rounded-card" :loading="loading" elevation="4">
         <v-container>
           <v-row justify="center">
-            <v-col cols="12" md="6" sm="12" xs="12" offset-md="3" offset-sm="0">
-              <v-toolbar dense floating class="ma-4">
+            <v-col cols="12" md="6" sm="12" xs="12">
+              <!-- <v-col cols="12" md="6" sm="12" xs="12" offset-md="3" offset-sm="0"> -->
+              <v-toolbar dense floating class="ma-4 rounded-card">
                 <v-text-field
                   v-model="searchInput"
                   prepend-inner-icon="mdi-text-box-search-outline"
@@ -39,13 +40,13 @@
                   <v-icon small>fas fa-search</v-icon>
                 </v-btn>
 
-                <v-btn icon>
-                  <v-icon>mdi-dots-vertical</v-icon>
+                <v-btn color="primary" small fab class="ml-2" @click="reload">
+                  <v-icon color="white">mdi-reload</v-icon>
                 </v-btn>
               </v-toolbar>
             </v-col>
 
-            <v-col cols="3">
+            <!-- <v-col cols="3">
               <v-alert
                 :value="packages.length > 0"
                 type="info"
@@ -56,7 +57,7 @@
               >
                 {{ packages.length }} results found
               </v-alert>
-            </v-col>
+            </v-col> -->
           </v-row>
         </v-container>
 
@@ -103,9 +104,13 @@ export default {
     noResultsString: "",
   }),
   methods: {
-    async search() {
+    reload() {
+      this.$store.dispatch("clearPackageDetailsCache");
+      this.$store.dispatch("clearPackageList");
+    },
+    async search(force = false) {
       // Don't search without input
-      if (!this.searchInput) return;
+      if (!this.searchInput && !force) return;
 
       this.loading = true;
       this.noResults = false;

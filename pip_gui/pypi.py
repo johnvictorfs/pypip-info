@@ -1,6 +1,19 @@
+from typing import Dict, Tuple, Optional
+import json
+
 from bs4 import BeautifulSoup
-from typing import List
 import requests
+
+
+try:
+    with open('config.json') as f:
+        config = json.load(f)
+
+except FileNotFoundError:
+    config = {
+        "username": "",
+        "password": ""
+    }
 
 
 def search_pypi(query: str):
@@ -57,20 +70,27 @@ def find_python_versions(array: list):
 
 def generate_project_urls_dict(urls: dict):
     new_urls = []
+    if not urls:
+        return []
     for key, value in urls.items():
         new_urls.append({'name': key, 'url': value})
     return new_urls
 
 
-def get_repository_type(urls: List[str]):
-    for url in urls:
+def get_repository_type(urls: Dict[str, str]) -> Tuple[Optional[str], Optional[str]]:
+    if not urls:
+        return None, None
+
+    url_list = urls.values()
+
+    for url in url_list:
         if 'github' in url.lower():
-            return 'GitHub'
+            return ('GitHub', url)
         elif 'gitlab' in url.lower():
-            return 'GitLab'
+            return ('GitLab', url)
         elif 'bitbucket' in url.lower():
-            return 'BitBucket'
-    return None
+            return ('BitBucket', url)
+    return None, None
 
 
 def get_package(package_name: str):
@@ -82,29 +102,36 @@ def get_package(package_name: str):
     gh_readme = None
     contributors = None
 
-    for value in data['info'].get('project_urls').values():
-        if 'github' in value:
-            github_repo = value
+    if data['info'].get('project_urls'):
+        for value in data['info']['project_urls'].values():
+            if 'github' in value:
+                try:
+                    github_repo = value
 
-            author_github = github_repo.split('/')[3] if github_repo else None
-            repo_name_github = github_repo.split('/')[4] if github_repo else None
+                    author_github = github_repo.split('/')[3] if github_repo else None
+                    repo_name_github = github_repo.split('/')[4] if github_repo else None
 
-            gh_r = requests.get(f'https://api.github.com/repos/{author_github}/{repo_name_github}')
-            if gh_r.status_code == 200:
-                data_gh = gh_r.json()
+                    gh_r = requests.get(
+                        f'https://api.github.com/repos/{author_github}/{repo_name_github}', auth=(config['username'], config['password']))
+                    if gh_r.status_code == 200:
+                        data_gh = gh_r.json()
 
-                contributors_r = requests.get(data_gh['contributors_url'])
+                        contributors_r = requests.get(data_gh['contributors_url'], auth=(config['username'], config['password']))
 
-                if contributors_r.status_code == 200:
-                    contributors_data = contributors_r.json()
-                    contributors = len(contributors_data)
+                        if contributors_r.status_code == 200:
+                            # Get number of contributors
+                            contributors_data = contributors_r.json()
+                            contributors = len(contributors_data)
 
-                default_branch = data_gh.get('default_branch')
+                        default_branch = data_gh.get('default_branch')
 
-                gh_readme_request = requests.get(
-                    f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/{default_branch}/README.md'
-                )
-                gh_readme = gh_readme_request.text if gh_readme_request.status_code == 200 else None
+                        gh_readme_request = requests.get(
+                            f'https://raw.githubusercontent.com/{author_github}/{repo_name_github}/{default_branch}/README.md'
+                        )
+                        gh_readme = gh_readme_request.text if gh_readme_request.status_code == 200 else None
+                    break  # Stop after first github request
+                except Exception:
+                    pass
 
     keywords = data['info'].get('keywords')
 
@@ -112,15 +139,31 @@ def get_package(package_name: str):
 
     requirements = data['info'].get('requires_dist', [])
 
+    # PyPi project url
+    project_url = {
+        'name': 'Project Page',
+        'url': data['info'].get('project_url')
+    }
+
+    last_update_date = None
+    if data['releases'].get(last_update):
+        last_update_date = data['releases'][last_update][0].get('upload_time')
+
+    repository_type, repository_url = get_repository_type(data['info'].get('project_urls'))
+
+    print(repository_type, repository_url)
+
     parsed_data = {
         'name': package_name,
         'has_repository_data': bool(data_gh),
         'author': data['info'].get('author'),
         'contributors': contributors,
-        'repository_type': get_repository_type(data['info'].get('project_urls', {}).values()),
+        'repository_type': repository_type,
+        'repository_url': repository_url,
         'author_email': data['info'].get('author_email'),
         'keywords': keywords.split(',') if keywords else [],
         'requirements': len(requirements) if requirements else None,
+        'requirements_list': requirements if requirements else [],
         'license': find_license(data['info']['classifiers']),
         'python_versions': find_python_versions(data['info'].get('classifiers')),  # classifiers
         'operating_systems': [],
@@ -132,14 +175,15 @@ def get_package(package_name: str):
         'open_issues': data_gh['open_issues_count'] if data_gh else None,
         'last_commit': data_gh['updated_at'] if data_gh else None,
         'last_update': last_update,  # Procurar na lista de releases, pegar a data do último release
-        'last_update_date': data['releases'][last_update][0].get('upload_time'),
+        'last_update_date': last_update_date,
         'pypi_readme': data['info'].get('description'),
+        'pypi_readme_type': data['info'].get('description_content_type'),
         'homepage_readme': gh_readme,
         'homepage_type': data_gh['homepage'] if data_gh else None,
         'homepage_url': data_gh['html_url'] if data_gh else None,
         'version': None,
         'releases': list(data['releases'].keys()),
-        'project_urls': generate_project_urls_dict(data['info']['project_urls'])
+        'project_urls': [project_url] + generate_project_urls_dict(data['info']['project_urls'])
     }
 
     return parsed_data

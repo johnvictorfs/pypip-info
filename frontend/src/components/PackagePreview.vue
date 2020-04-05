@@ -1,13 +1,21 @@
 <template>
-  <v-card class="ma-1" elevation="2" :loading="loading">
-    <v-toolbar color="#0073B7" dark>
+  <v-card class="ma-1 rounded-card" elevation="2">
+    <v-toolbar color="success" dark>
       <v-toolbar-title>{{ pack.name }}</v-toolbar-title>
 
       <v-spacer></v-spacer>
 
-      <v-btn icon>
-        <v-icon>mdi-information</v-icon>
-      </v-btn>
+      {{ hasNoReadme }}
+
+      <v-tooltip bottom>
+        <template v-slot:activator="{ on }">
+          <v-btn icon @click="selectPackage" v-on="on" :disabled="hasNoReadme">
+            <v-icon>mdi-information</v-icon>
+          </v-btn>
+        </template>
+
+        <span>Readme</span>
+      </v-tooltip>
     </v-toolbar>
 
     <v-row dense justify="center" v-if="error">
@@ -23,62 +31,89 @@
     </v-row>
 
     <v-card-text v-if="loaded">
+      <p v-if="packageData.description" class="package-description">
+        {{ packageData.description }}
+      </p>
+
       <v-row>
-        <v-col cols="6" v-if="mockPackage.has_repository_data">
-          <v-card>
+        <v-col cols="6" v-if="packageData.has_repository_data">
+          <v-card class="rounded-card">
             <v-toolbar color="grey darken-1" class="white--text">
               <v-toolbar-title>
                 <v-icon left color="white">
-                  {{ getIcon(mockPackage.repository_type, "") }}
+                  {{ getIcon(packageData.repository_type, "") }}
                 </v-icon>
-                {{ mockPackage.repository_type }}
+                {{ packageData.repository_type }}
               </v-toolbar-title>
             </v-toolbar>
 
             <v-card-text>
               <v-alert
-                :value="!mockPackage.has_repository_data"
+                :value="!packageData.has_repository_data"
                 type="error"
                 transition="scale-transition"
                 border="left"
                 class="ma-2"
               >
-                Couldn't get {{ mockPackage.repository_type }} Data
+                Couldn't get {{ packageData.repository_type }} Data
               </v-alert>
 
               <v-list flat>
-                <v-subheader>Repository Information</v-subheader>
-
                 <v-list-item-group color="primary">
-                  <v-list-item>
+                  <v-list-item
+                    :href="packageData.repository_url"
+                    target="_blank"
+                    v-if="packageData.repository_url"
+                  >
                     <v-list-item-icon>
-                      <v-icon>mdi-star</v-icon>
+                      <v-icon>fab fa-github</v-icon>
                     </v-list-item-icon>
+
                     <v-list-item-content>
                       <v-list-item-title>
-                        Stars: {{ commaSeparetedNumber(mockPackage.stars) }}
+                        Repository Page
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
 
-                  <v-list-item>
+                  <v-list-item
+                    :href="packageData.repository_url + '/stargazers'"
+                    target="_blank"
+                  >
+                    <v-list-item-icon>
+                      <v-icon>fas fa-star</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        Stars: {{ commaSeparetedNumber(packageData.stars) }}
+                      </v-list-item-title>
+                    </v-list-item-content>
+                  </v-list-item>
+
+                  <v-list-item
+                    :href="packageData.repository_url + '/network/members'"
+                    target="_blank"
+                  >
                     <v-list-item-icon>
                       <v-icon>fas fa-code-branch</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        Forks: {{ commaSeparetedNumber(mockPackage.forks) }}
+                        Forks: {{ commaSeparetedNumber(packageData.forks) }}
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
 
-                  <v-list-item>
+                  <v-list-item
+                    :ref="packageData.repository_url + '/graphs/contributors'"
+                    target="_blank"
+                  >
                     <v-list-item-icon>
                       <v-icon>fas fa-user-friends</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                       <v-list-item-title>
-                        Contributors: {{ mockPackage.contributors }}
+                        Contributors: {{ packageData.contributors }}
                       </v-list-item-title>
                     </v-list-item-content>
                   </v-list-item>
@@ -88,7 +123,7 @@
 
             <v-divider />
 
-            <v-card-actions v-if="mockPackage.last_commit">
+            <v-card-actions v-if="packageData.last_commit">
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>
@@ -96,7 +131,7 @@
                     Latest Commit
                   </v-list-item-title>
                   <v-list-item-subtitle class="ml-9">
-                    {{ getDate(mockPackage.last_commit) }}
+                    {{ getDate(packageData.last_commit) }}
                   </v-list-item-subtitle>
                 </v-list-item-content>
               </v-list-item>
@@ -104,8 +139,8 @@
           </v-card>
         </v-col>
 
-        <v-col :cols="mockPackage.has_repository_data ? 6 : 12">
-          <v-card>
+        <v-col :cols="packageData.has_repository_data ? 6 : 12">
+          <v-card class="rounded-card">
             <v-toolbar color="#0073B7" class="white--text">
               <v-toolbar-title>
                 <v-icon left color="white">fab fa-python</v-icon>
@@ -114,12 +149,10 @@
             </v-toolbar>
 
             <v-card-text>
-              <v-list v-if="mockPackage.project_urls.length > 0">
-                <v-subheader>Project Links</v-subheader>
-
+              <v-list v-if="packageData.project_urls.length > 0">
                 <v-list-item-group>
                   <v-list-item
-                    v-for="item in mockPackage.project_urls"
+                    v-for="item in packageData.project_urls"
                     :key="item.name"
                     :href="item.url"
                     target="_blank"
@@ -134,10 +167,27 @@
                 </v-list-item-group>
               </v-list>
 
-              <v-list v-if="mockPackage.project_urls.length > 0">
-                <v-subheader>Project Information</v-subheader>
+              <v-divider />
 
+              <v-list v-if="packageData.project_urls.length > 0">
                 <v-list-item-group>
+                  <v-list-item
+                    flat
+                    v-if="packageData.python_versions.length > 0"
+                  >
+                    <v-list-item-icon>
+                      <v-icon>fab fa-python</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        Python Versions
+                      </v-list-item-title>
+                      <v-list-item-subtitle>
+                        {{ packageData.python_versions.join(", ") }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+
                   <v-list-item flat>
                     <v-list-item-icon>
                       <v-icon>fas fa-upload</v-icon>
@@ -147,31 +197,77 @@
                         Releases
                       </v-list-item-title>
                       <v-list-item-subtitle>
-                        {{ mockPackage.number_releases }}
+                        {{ packageData.number_releases }}
                       </v-list-item-subtitle>
                     </v-list-item-content>
                   </v-list-item>
 
-                  <v-list-item flat v-if="mockPackage.requirements !== null">
-                    <v-list-item-icon>
-                      <v-icon>fas fa-book</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                      <v-list-item-title>
-                        Requirements
-                      </v-list-item-title>
-                      <v-list-item-subtitle>
-                        {{ mockPackage.requirements }}
-                      </v-list-item-subtitle>
-                    </v-list-item-content>
-                  </v-list-item>
+                  <v-dialog v-model="requirementsDialog" max-width="650">
+                    <template v-slot:activator="{ on }">
+                      <v-list-item
+                        flat
+                        v-if="packageData.requirements !== null"
+                        v-on="on"
+                      >
+                        <v-list-item-icon>
+                          <v-icon>fas fa-book</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-content>
+                          <v-list-item-title>
+                            Requirements
+                          </v-list-item-title>
+                          <v-list-item-subtitle>
+                            {{ packageData.requirements }}
+                          </v-list-item-subtitle>
+                        </v-list-item-content>
+                      </v-list-item>
+                    </template>
+
+                    <v-card>
+                      <v-toolbar color="primary" class="white--text">
+                        <v-toolbar-title>
+                          {{ packageData.name }} Requirements
+                        </v-toolbar-title>
+
+                        <v-spacer />
+                        <v-btn
+                          icon
+                          color="white"
+                          @click="requirementsDialog = false"
+                        >
+                          <v-icon>
+                            fas fa-times
+                          </v-icon>
+                        </v-btn>
+                      </v-toolbar>
+
+                      <v-list>
+                        <v-list-item-group>
+                          <v-list-item
+                            flat
+                            v-for="requirement in packageData.requirements_list"
+                            :key="requirement"
+                          >
+                            <v-list-item-ico>
+                              <v-list-item-icon>
+                                <v-icon>fas fa-book</v-icon>
+                              </v-list-item-icon>
+                            </v-list-item-ico>
+                            <v-list-item-content>
+                              {{ requirement }}
+                            </v-list-item-content>
+                          </v-list-item>
+                        </v-list-item-group>
+                      </v-list>
+                    </v-card>
+                  </v-dialog>
                 </v-list-item-group>
               </v-list>
             </v-card-text>
 
-            <v-divider />
+            <v-divider v-if="packageData.last_update !== '0.0.0'" />
 
-            <v-card-actions>
+            <v-card-actions v-if="packageData.last_update !== '0.0.0'">
               <v-list-item>
                 <v-list-item-content>
                   <v-list-item-title>
@@ -179,8 +275,8 @@
                     Latest Release
                   </v-list-item-title>
                   <v-list-item-subtitle class="ml-9">
-                    {{ mockPackage.last_update }} ({{
-                      getDate(mockPackage.last_update_date)
+                    {{ packageData.last_update }} ({{
+                      getDate(packageData.last_update_date)
                     }})
                   </v-list-item-subtitle>
                 </v-list-item-content>
@@ -208,25 +304,106 @@ export default {
     pack: Object,
   },
   data: () => ({
-    loading: true,
+    requirementsDialog: false,
+    loading: false,
     loaded: false,
-    mockPackage: null,
+    packageData: null,
     error: false,
+    hasNoReadme: false,
   }),
-  async mounted() {
-    try {
-      const { data } = await api.get_package(this.pack.name);
-      this.mockPackage = data;
+  mounted() {
+    this.loading = true;
+
+    const existing = this.$store.state.packageDetails[this.pack.name];
+
+    if (existing) {
+      this.packageData = existing;
       this.loaded = true;
-    } catch (error) {
-      this.error = true;
-    } finally {
       this.loading = false;
+      this.blankReadme();
+    } else {
+      this.setPackageData();
     }
   },
+  computed: {},
   methods: {
+    blankReadme() {
+      if (!this.packageData) {
+        this.hasNoReadme = true;
+      }
+
+      if (!this.packageData.pypi_readme && !this.packageData.homepage_readme) {
+        console.log(
+          !this.packageData.pypi_readme,
+          !this.packageData.homepage_readme
+        );
+        this.hasNoReadme = true;
+      }
+
+      if (!this.packageData.pypi_readme.match(/^(?!\s*$).+/))
+        this.hasNoReadme = true;
+
+      this.hasNoReadme = false;
+    },
+    selectPackage() {
+      this.$store.dispatch("updateSelectedPackage", this.packageData);
+      this.$router.push("/details");
+
+      window.scrollTo({
+        top: 0,
+        left: 0,
+        behavior: "smooth",
+      });
+    },
+    async setPackageData() {
+      try {
+        const { data } = await api.get_package(this.pack.name);
+        this.packageData = data;
+        this.$store.dispatch("updatePackageDetails", {
+          key: this.pack.name,
+          value: data,
+        });
+        this.loaded = true;
+      } catch (error) {
+        this.error = true;
+      } finally {
+        this.loading = false;
+        this.blankReadme();
+      }
+    },
     commaSeparetedNumber(number) {
       return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    },
+    timeSince(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+
+      let interval = Math.floor(seconds / 31536000);
+
+      if (interval > 1) {
+        return interval + " years";
+      }
+
+      interval = Math.floor(seconds / 2592000);
+      if (interval > 1) {
+        return interval + " months";
+      }
+
+      interval = Math.floor(seconds / 86400);
+      if (interval > 1) {
+        return interval + " days";
+      }
+
+      interval = Math.floor(seconds / 3600);
+      if (interval > 1) {
+        return interval + " hours";
+      }
+
+      interval = Math.floor(seconds / 60);
+      if (interval > 1) {
+        return interval + " minutes";
+      }
+
+      return Math.floor(seconds) + " seconds";
     },
     titleCase(text) {
       const sentence = text.toLowerCase().split(" ");
@@ -240,7 +417,9 @@ export default {
     getDate(datetime) {
       const date = new Date(Date.parse(datetime));
 
-      return date.toLocaleDateString();
+      if (!date) return null;
+
+      return `${date.toLocaleDateString()}, ${this.timeSince(date)} ago`;
     },
     getIcon(name_raw, url_raw) {
       const name = name_raw.toLowerCase();
@@ -248,6 +427,11 @@ export default {
 
       if (name.includes("home")) {
         return "fas fa-home";
+      } else if (
+        url.includes("project page") ||
+        name.includes("project page")
+      ) {
+        return "fab fa-python";
       } else if (url.includes("github") || name.includes("github")) {
         return "fab fa-github";
       } else if (url.includes("gitlab") || name.includes("gitlab")) {
@@ -260,3 +444,9 @@ export default {
   },
 };
 </script>
+
+<style scoped>
+.package-description {
+  font-size: 18px;
+}
+</style>

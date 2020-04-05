@@ -148,3 +148,6 @@ static
 
 # Other
 .venv
+
+# Sensitive data
+config.json
