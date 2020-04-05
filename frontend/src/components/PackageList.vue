@@ -40,8 +40,10 @@
                   <v-icon small>fas fa-search</v-icon>
                 </v-btn>
 
-                <v-btn color="primary" small fab class="ml-2" @click="reload">
-                  <v-icon color="white">mdi-reload</v-icon>
+                <v-btn icon color="black" class="ml-2" @click="reload">
+                  <v-icon>
+                    fas fa-times
+                  </v-icon>
                 </v-btn>
               </v-toolbar>
             </v-col>

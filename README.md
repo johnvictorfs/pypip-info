@@ -41,3 +41,21 @@ For this purpose me and my friend [Guilherme](https://github.com/johnvictorfs/pi
 ![image](https://user-images.githubusercontent.com/37747572/78468483-e6852180-76ee-11ea-9de2-1694f8ab55a8.png)
 
 ![image](https://user-images.githubusercontent.com/37747572/78468489-fac91e80-76ee-11ea-8dd0-938aff3291e7.png)
+
+---
+
+## Setup
+
+- Install necessary Python packages with [poetry](https://github.com/python-poetry/poetry)
+
+  - `poetry install`
+
+- Install necessary Frontend packages with [yarn](https://yarnpkg.com/)
+
+  - `cd frontend && yarn`
+
+  - Build Frontend for production
+    - `yarn build`
+
+- Run Project
+  - `poetry run main.py`

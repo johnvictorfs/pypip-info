@@ -8,7 +8,6 @@ import requests
 try:
     with open('config.json') as f:
         config = json.load(f)
-
 except FileNotFoundError:
     config = {
         "username": "",
@@ -112,7 +111,9 @@ def get_package(package_name: str):
                     repo_name_github = github_repo.split('/')[4] if github_repo else None
 
                     gh_r = requests.get(
-                        f'https://api.github.com/repos/{author_github}/{repo_name_github}', auth=(config['username'], config['password']))
+                        f'https://api.github.com/repos/{author_github}/{repo_name_github}',
+                        auth=(config['username'], config['password'])
+                    )
                     if gh_r.status_code == 200:
                         data_gh = gh_r.json()
 
