@@ -40,7 +40,7 @@
                   <v-icon small>fas fa-search</v-icon>
                 </v-btn>
 
-                <v-btn icon color="black" class="ml-2" @click="reload">
+                <v-btn icon color="#757D75" class="ml-2" @click="reload">
                   <v-icon>
                     fas fa-times
                   </v-icon>
