@@ -200,6 +200,20 @@
                     </v-list-item-content>
                   </v-list-item>
 
+                  <v-list-item flat>
+                    <v-list-item-icon>
+                      <v-icon>fas fa-balance-scale</v-icon>
+                    </v-list-item-icon>
+                    <v-list-item-content>
+                      <v-list-item-title>
+                        License
+                      </v-list-item-title>
+                      <v-list-item-subtitle>
+                        {{ packageData.license }}
+                      </v-list-item-subtitle>
+                    </v-list-item-content>
+                  </v-list-item>
+
                   <v-dialog v-model="requirementsDialog" max-width="650">
                     <template v-slot:activator="{ on }">
                       <v-list-item
