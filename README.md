@@ -18,15 +18,16 @@ For this purpose me and my friend [Guilherme](https://github.com/johnvictorfs/pi
 
 ## Main Features
 
-- GitHub Information
+- General Information
+  - Project License
 
+- GitHub Information
   - Number of Stars
   - Number of Forks
   - Number of Contributors
   - Latest commit date
 
 - PyPi Project Information
-
   - Project URLs
   - Python Versions
   - Number of Releases
